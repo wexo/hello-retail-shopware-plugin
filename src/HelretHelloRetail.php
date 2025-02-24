@@ -4,6 +4,7 @@ namespace Helret\HelloRetail;
 
 use Helret\HelloRetail\Service\ExportService;
 use League\Flysystem\FilesystemException;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -11,6 +12,7 @@ use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
+use Shopware\Core\System\SalesChannel\SalesChannelCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 
 class HelretHelloRetail extends Plugin
@@ -98,55 +100,41 @@ class HelretHelloRetail extends Plugin
     {
         parent::postUpdate($updateContext);
 
+
+        $updates = [];
         if (version_compare($updateContext->getUpdatePluginVersion(), "3.0.0", ">=")) {
-            $salesChannelRepository = $this->container->get("sales_channel.repository");
+            $updates[] = $this->getUpdateTemplatesV300();
+        }
+        if (version_compare($updateContext->getUpdatePluginVersion(), "4.4.1", ">=")) {
+            $updates[] = $this->getUpdateTemplatesV441();
+        }
 
-            $updateTemplate = $this->getUpdateTemplatesV300();
-            $templates = ["headerTemplate", "bodyTemplate", "footerTemplate"];
+        $versionUpdate = $updates && $this->updateTemplates($updates, $updateContext->getContext());
 
-            $salesChannels = $salesChannelRepository->search(
-                (new Criteria())->addFilter(new EqualsFilter("typeId", self::SALES_CHANNEL_TYPE_HELLO_RETAIL)),
-                $updateContext->getContext()
-            );
+        // Trigger notification.
+        if ($versionUpdate) {
+            $this->container->get('notification.repository')->create([
+                [
+                    'status' => 'info',
+                    'message' => 'Hello Retail feeds updated please verify updates/inheritance',
+                    'requiredPrivileges' => [],
+                    'adminOnly' => true,
+                ]
+            ], $updateContext->getContext());
+        }
 
-            /** @var SalesChannelEntity $salesChannel */
-            foreach ($salesChannels as $salesChannel) {
-                $updated = false;
-                $configuration = $salesChannel->getConfiguration();
-                if (!isset($configuration["feeds"]) || !is_array($configuration["feeds"])) {
-                    continue;
-                }
-
-                foreach ($configuration["feeds"] as $key => $feed) {
-                    if (!isset($updateTemplate[$key])) {
-                        continue;
-                    }
-
-                    $template = $updateTemplate[$key];
-                    foreach ($templates as $templateKey) {
-                        if (!$configuration["feeds"][$key][$templateKey]) {
-                            continue;
-                        }
-
-                        $entity = trim($template[$templateKey]);
-                        $config = trim($configuration["feeds"][$key][$templateKey]);
-
-                        if ($entity === $config) {
-                            $configuration["feeds"][$key][$templateKey] = null;
-                            $updated = true;
-                        }
-                    }
-                }
-
-                if ($updated) {
-                    $salesChannelRepository->upsert([
-                        [
-                            "id" => $salesChannel->getId(),
-                            "configuration" => $configuration
-                        ]
-                    ], $updateContext->getContext());
-                }
-            }
+        // Mark "active" templates as inherited
+        $template = [];
+        $exportService = $this->container->get(ExportService::class);
+        foreach ($exportService->getFeeds() as $feed) {
+            $template[$feed->getFeed()] = [
+                'headerTemplate' => $feed->getHeaderTemplate(),
+                'bodyTemplate' => $feed->getBodyTemplate(),
+                'footerTemplate' => $feed->getFooterTemplate(),
+            ];
+        }
+        if ($template) {
+            $this->updateTemplates([$template], $updateContext->getContext());
         }
     }
 
@@ -325,5 +313,181 @@ class HelretHelloRetail extends Plugin
             ],
         ];
         // phpcs:enable Generic.Files.LineLength.TooLong
+    }
+
+    private function getUpdateTemplatesV441(): array
+    {
+        // phpcs:disable Generic.Files.LineLength.TooLong
+        return [
+            'product' => [
+                'bodyTemplate' => "<product>
+    <url>{{ seoUrl('frontend.detail.page', {'productId': product.id}) }}</url>
+    <title>{% if product.name %}{{ product.name }}{% else %}{{ product.translated.name }}{% endif %}</title>
+    <ean>{{ product.ean }}</ean>
+    <id>{{ product.id }}</id>
+    <sku>{{ product.productNumber }}</sku>
+    {% if product.cover %}
+        {% set thumbnail = product.cover.media.thumbnails.elements|filter(img => img.width == 400)|first %}
+        <imgurl>{% if thumbnail %}{{ thumbnail.url }}{% else %}{{ product.cover.media.url }}{% endif %}</imgurl>
+    {% else %}
+        <imgurl/>
+    {% endif %}
+
+    {# Price #}
+    {% set price = product.calculatedPrices.count > 0 ? product.calculatedPrices.last : product.calculatedPrice %}
+    {% set listPrice = price.listPrice %}
+    <price>{{ price.unitPrice }}</price>
+    <oldPrice>{% if listPrice %}{{ listPrice.price }}{% endif %}</oldPrice>
+    <displayFrom>{{ product.calculatedPrices.count > 1 }}</displayFrom>
+    {# Price end #}
+
+
+    <description>{{ product.description }}</description>
+    <brand>{% if product.manufacturer %}{{ product.manufacturer.name }}{% endif %}</brand>
+
+    <productnumber>{{ product.productNumber }}</productnumber>
+    <hierarchies>
+        {% if product.categories %}
+            {% for category in product.categories.elements %}
+                <hierarchy>
+                    {%- for breadCrumb in category.getBreadcrumb -%}
+                        <category>{{ breadCrumb }}</category>
+                    {%- endfor -%}
+                </hierarchy>
+            {% endfor %}
+        {% endif %}
+    </hierarchies>
+
+    {% if product.extensions.properties %}
+        <properties>
+            {% for key, value in product.extensions.properties.all() %}
+                <property>
+                    <name>{{ key }}</name>
+                    <options>
+                        {%- for option in value -%}
+                            <option>{{ option.name }}</option>
+                        {%- endfor -%}
+                    </options>
+                </property>
+            {% endfor %}
+        </properties>
+    {% endif %}
+
+    <keywords>{% if product.searchKeywords %}{% for keyword in product.searchKeywords.elements %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
+
+    {% set color = product.properties.elements|filter(property => property.group.name == 'Color')|first %}
+    <color>{% if color %}{{ color.name }}{% endif %}</color>
+
+    {% set gender = product.properties.elements|filter(property => property.group.name == 'Gender')|first %}
+    <gender>{% if gender %}{{ gender.name }}{% endif %}</gender>
+    <instock>{% if product.availableStock > 0 %}true{% else %}false{% endif %}</instock>
+</product>
+",
+            ],
+            'category' => [
+                'bodyTemplate' => "<category>
+    <title>{% if category.name %}{{ category.name }}{% else %}{{ category.translated.name }}{% endif %}</title>
+    <url>{{ seoUrl('frontend.navigation.page', {'navigationId': category.id}) }}</url>
+    <description>{% if category.description %}{{ category.description }}{% else %}{{ category.translated.description }}{% endif %}</description>
+    <keywords>{% if category.translated.keywords %}{% for keyword in category.translated.keywords %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
+
+    <hierarchy>
+        {% for breadCrumb in category.getBreadCrumb %}
+            <category>{{ breadCrumb }}</category>
+        {% endfor %}
+    </hierarchy>
+
+    {% if products is defined and products is not empty %}
+        <categoryProducts>
+            {% for product in products %}
+                {%- if product and product.productNumber is defined -%}
+                    <product>
+                        <url>{{ seoUrl('frontend.detail.page', {'productId': product.id}) }}</url>
+                        <productNumber>{{ product.productNumber }}</productNumber>
+                        <title>{% if product.name %}{{ product.name }}{% else %}{{ product.translated.name }}{% endif %}</title>
+                    </product>
+                {%- endif -%}
+            {% endfor %}
+        </categoryProducts>
+    {% endif %}
+</category>
+"
+            ]
+        ];
+        // phpcs:enable Generic.Files.LineLength.TooLong
+    }
+
+
+    private function updateTemplates(array $updateTemplates, Context $context): bool
+    {
+        /** @var EntityRepository<SalesChannelCollection> $salesChannelRepository */
+        $salesChannelRepository = $this->container->get('sales_channel.repository');
+        $salesChannels = $salesChannelRepository->search(
+            (new Criteria())
+                ->addFilter(new EqualsFilter('typeId', self::SALES_CHANNEL_TYPE_HELLO_RETAIL)),
+            $context
+        );
+
+        if (!$salesChannels->first()) {
+            return false;
+        }
+
+
+        $updates = [];
+        foreach ($updateTemplates as $updateTemplate) {
+            if (!$updateTemplate) {
+                continue;
+            }
+
+            /** @var SalesChannelEntity $salesChannel */
+            foreach ($salesChannels as $salesChannel) {
+                $updated = false;
+                $configuration = $salesChannel->getConfiguration();
+                if (!isset($configuration['feeds']) || !is_array($configuration['feeds'])) {
+                    continue;
+                }
+
+                foreach ($configuration['feeds'] as $key => $feed) {
+                    if (!isset($updateTemplate[$key])) {
+                        continue;
+                    }
+
+                    $template = $updateTemplate[$key];
+                    foreach (['headerTemplate', 'bodyTemplate', 'footerTemplate'] as $templateKey) {
+                        if (!isset($template[$templateKey])) {
+                            continue;
+                        }
+
+                        if (!$configuration['feeds'][$key][$templateKey]) {
+                            // Considered inherited
+                            continue;
+                        }
+
+                        $entity = preg_replace('/\s+/', '', trim($template[$templateKey]));
+                        $config = preg_replace('/\s+/', '', trim($configuration['feeds'][$key][$templateKey]));
+
+                        if ($entity === $config) {
+                            $configuration['feeds'][$key][$templateKey] = null;
+                            $updated = true;
+                        }
+                    }
+                }
+
+                if ($updated) {
+                    $salesChannel->setConfiguration($configuration);
+                    $updates[$salesChannel->getId()] = [
+                        'id' => $salesChannel->getId(),
+                        'configuration' => $configuration
+                    ];
+                }
+            }
+        }
+
+        if ($updates) {
+            $salesChannelRepository->update(array_values($updates), $context);
+            return true;
+        }
+
+        return false;
     }
 }

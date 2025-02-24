@@ -2,7 +2,9 @@
 
 namespace Helret\HelloRetail\Service\Models;
 
-class Recommendation
+use Helret\HelloRetail\Service\Models\Requests\AbstractRequest;
+
+class Recommendation extends AbstractRequest
 {
     public array $fields = [];
 
@@ -53,5 +55,10 @@ class Recommendation
     public function setContext(RecommendationContext $context): void
     {
         $this->context = $context;
+    }
+
+    public function toArray(): array
+    {
+        return [];
     }
 }

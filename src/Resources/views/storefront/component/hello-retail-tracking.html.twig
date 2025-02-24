@@ -15,5 +15,17 @@
                 s.parentNode.insertBefore(aws, s);
             })();
         </script>
+
+      {% if context.customerId %}
+        <script type="text/javascript">
+          (function () {
+            hrq = window.hrq || [];
+            hrq.push([
+              "setCustomerId",
+              "{{ context.customerId }}"
+            ]);
+          })();
+        </script>
+      {% endif %}
     {% endif %}
 {% endblock %}

@@ -2,9 +2,6 @@
 
 namespace Helret\HelloRetail\Controller;
 
-use Shopware\Core\Checkout\Cart\Error\ErrorCollection;
-use Shopware\Storefront\Checkout\Cart\Error\PaymentMethodChangedError;
-use Shopware\Storefront\Checkout\Cart\Error\ShippingMethodChangedError;
 use Shopware\Storefront\Page\Checkout\Offcanvas\CheckoutOffcanvasWidgetLoadedHook;
 use Shopware\Storefront\Page\Checkout\Offcanvas\OffcanvasCartPageLoader;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +11,6 @@ use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Helret\HelloRetail\Service\HelloRetailRecommendationService;
 use Symfony\Component\Routing\Annotation\Route;
-use Shopware\Storefront\Controller\CheckoutController;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class CartController extends StorefrontController
@@ -79,4 +75,3 @@ class CartController extends StorefrontController
         ];
     }
 }
-

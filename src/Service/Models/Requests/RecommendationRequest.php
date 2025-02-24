@@ -2,19 +2,12 @@
 
 namespace Helret\HelloRetail\Service\Models\Requests;
 
-use Helret\HelloRetail\Service\Models\Recommendation;
+use Helret\HelloRetail\Service\Models\RecommendationContext;
 
-class RecommendationRequest extends Request
+class RecommendationRequest extends AbstractRequest
 {
-    public array $requests;
-
-    public function __construct(array $requests, ?string $websiteUuid = null, ?string $trackingUserId = null)
+    public function __construct(protected array $requests = [])
     {
-        $this->requests = $requests;
-        $this->websiteUuid = $websiteUuid;
-        $this->trackingUserId = $trackingUserId;
-
-        parent::__construct($websiteUuid, $trackingUserId);
     }
 
     public function getRequests(): array
@@ -25,5 +18,40 @@ class RecommendationRequest extends Request
     public function setRequests(array $requests): void
     {
         $this->requests = $requests;
+    }
+
+    public function addManagedRecommendation(
+        string $key,
+        ?RecommendationContext $recommendationContext,
+        array $fields = [],
+        $hideAdditionalVariants = true
+    ): static {
+        $request = [
+            'key' => $key,
+            'hideAdditionalVariants' => $hideAdditionalVariants,
+        ];
+
+        if ($fields) {
+            $request['fields'] = $fields;
+        }
+
+        if ($recommendationContext) {
+            $request['context'] = [
+                'hierachies' => $recommendationContext->getHierarchies(),
+                'brand' => $recommendationContext->getBrand(),
+                'urls' => $recommendationContext->getUrls(),
+            ];
+        }
+
+        $this->requests[] = $request;
+
+        return $this;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'requests' => $this->requests,
+        ];
     }
 }

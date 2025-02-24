@@ -1,11 +1,13 @@
+{# @var category \Shopware\Core\Content\Category\CategoryEntity #}
 <category>
-    <title>{% if category.name %}{{ category.name }}{% else %}{{ category.translated.name }}{% endif %}</title>
+    <title>{{ category.translation('name') }}</title>
     <url>{{ seoUrl('frontend.navigation.page', {'navigationId': category.id}) }}</url>
-    <description>{% if category.description %}{{ category.description }}{% else %}{{ category.translated.description }}{% endif %}</description>
+
+    <description>{{ category.translation('description') }}</description>
     <keywords>{% if category.translated.keywords %}{% for keyword in category.translated.keywords %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
 
     <hierarchy>
-        {% for breadCrumb in category.getBreadCrumb %}
+        {% for breadCrumb in category.breadcrumb %}
             <category>{{ breadCrumb }}</category>
         {% endfor %}
     </hierarchy>
@@ -23,4 +25,9 @@
             {% endfor %}
         </categoryProducts>
     {% endif %}
+
+    <extraData>
+        <id>{{ category.id }}</id>
+        <parent_id>{{ category.parentId }}</parent_id>
+    </extraData>
 </category>

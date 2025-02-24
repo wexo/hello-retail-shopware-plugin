@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 namespace Helret\HelloRetail\Export;
+
 class TemplateType
 {
     public const HEADER = 'template_type_header';

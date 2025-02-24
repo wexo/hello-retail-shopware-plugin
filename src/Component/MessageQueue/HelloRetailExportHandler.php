@@ -15,6 +15,9 @@ use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\Product\SalesChannel\SalesChannelProductEntity;
+use Shopware\Core\Content\ProductExport\ScheduledTask\ProductExportGenerateTaskHandler;
+use Shopware\Core\Content\ProductExport\ScheduledTask\ProductExportPartialGenerationHandler;
+use Shopware\Core\Content\ProductExport\Struct\ExportBehavior;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Adapter\Translation\AbstractTranslator;
 use Shopware\Core\Framework\Context;
@@ -32,12 +35,13 @@ use Helret\HelloRetail\Export\ExportEntityElement;
 use Helret\HelloRetail\Export\TemplateType;
 use Helret\HelloRetail\Service\HelloRetailService;
 use Helret\HelloRetail\HelretHelloRetail;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 
 #[AsMessageHandler]
 class HelloRetailExportHandler
 {
     private const RETRIES = 20;
-    private const SLEEP_BETWEEN_RETRIES = 20; // Seconds
+    private const SLEEP_BETWEEN_RETRIES = 20000; // Milliseconds == 20s
     protected Filesystem $filesystem;
 
     public function __construct(
@@ -60,19 +64,25 @@ class HelloRetailExportHandler
 
     /**
      * @throws FilesystemException
+     *
+     * @see ProductExportGenerateTaskHandler
+     * @see ProductExportPartialGenerationHandler
+     * @see ExportBehavior
      */
     public function __invoke(ExportEntityElement $message): void
     {
         $feedEntity = $message->getFeedEntity();
 
         $salesChannelId = $feedEntity->getSalesChannelId();
-        $salesChannelContext = $this->salesChannelContextService->get(new SalesChannelContextServiceParameters(
-            $salesChannelId,
-            '',
-            $feedEntity->getSalesChannelDomainLanguageId(),
-            $feedEntity->getSalesChannelDomainCurrencyId(),
-            $feedEntity->getSalesChannelDomainId()
-        ));
+        $salesChannelContext = $this->salesChannelContextService->get(
+            new SalesChannelContextServiceParameters(
+                $salesChannelId,
+                'hello-retail-' . $feedEntity->getEntity(),
+                $feedEntity->getSalesChannelDomainLanguageId(),
+                $feedEntity->getSalesChannelDomainCurrencyId(),
+                $feedEntity->getSalesChannelDomainId()
+            )
+        );
 
         $context = $salesChannelContext->getContext();
         $context->setConsiderInheritance(true);
@@ -129,7 +139,7 @@ class HelloRetailExportHandler
                     try {
                         $type = $connection->fetchOne(
                             "SELECT product_assignment_type FROM category WHERE id = :id",
-                            [ ":id" => Uuid::fromHexToBytes($message->getId()) ]
+                            [":id" => Uuid::fromHexToBytes($message->getId())]
                         );
                     } catch (Exception $e) {
                         $type = "product";
@@ -149,7 +159,10 @@ class HelloRetailExportHandler
             return;
         }
 
-        $data = [$feed => $entity];
+        $data = [
+            $feed => $entity,
+            'context' => $salesChannelContext,
+        ];
         if ($feed === 'product') {
             // Backwards compatability
             if ($message->getConfigValue("advancedPricing")) {
@@ -169,17 +182,21 @@ class HelloRetailExportHandler
         } elseif ($feed === 'category' && $message->getConfigValue("includeCategoryProducts")) {
             if ($entity->getProductAssignmentType() === "product_stream" && $entity->getProductStreamId()) {
                 $productRepository = $this->container->get("product.repository");
+                $filters = $this->productStreamBuilder->buildFilters(
+                    $entity->getProductStreamId(),
+                    $context
+                );
+
                 $data['products'] = $productRepository->search(
                     (new Criteria())
-                        ->addFilter(...$this->productStreamBuilder->buildFilters(
-                            $entity->getProductStreamId(),
-                            $context
-                        ))
+                        ->addFilter(...$filters)
                         // Ensure product's on this salesChannel and is active
-                        ->addFilter(new ProductAvailableFilter(
-                            $salesChannelId,
-                            ProductVisibilityDefinition::VISIBILITY_LINK
-                        )),
+                        ->addFilter(
+                            new ProductAvailableFilter(
+                                $salesChannelId,
+                                ProductVisibilityDefinition::VISIBILITY_LINK
+                            )
+                        ),
                     $context
                 )->getEntities();
             } else {
@@ -198,7 +215,7 @@ class HelloRetailExportHandler
             if (!$output) {
                 $this->translator->resetInjection();
                 $this->helloRetailService->exportLogger(
-                    HelretHelloRetail::EXPORT_ERROR,
+                    HelretHelloRetail::EXPORT_ERROR . '.empty.template-body-rendering',
                     [
                         'entityId' => $entity->getId(),
                         'feed' => $feed,
@@ -213,7 +230,7 @@ class HelloRetailExportHandler
             $this->filesystem->write($message->getDirectory() . DIRECTORY_SEPARATOR . $message->getId(), $output);
         } catch (\Error|\TypeError|\Exception $e) {
             $this->helloRetailService->exportLogger(
-                HelretHelloRetail::EXPORT_ERROR,
+                HelretHelloRetail::EXPORT_ERROR . '.template-body-rendering',
                 [
                     'entityId' => $entity->getId(),
                     'feed' => $feed,
@@ -259,7 +276,7 @@ class HelloRetailExportHandler
                 $feedContent .= $this->filesystem->read($header);
             } catch (\Error|\TypeError|FilesystemException|\Exception $e) {
                 $this->helloRetailService->exportLogger(
-                    HelretHelloRetail::EXPORT_ERROR,
+                    HelretHelloRetail::EXPORT_ERROR . '.collect-files',
                     [
                         'header' => $header ?? null,
                         'feed' => $message->getFeedEntity()->getFeed(),
@@ -337,16 +354,17 @@ class HelloRetailExportHandler
         ?float $successThreshold,
         ?array $allIds,
         string $dir
-    ): void
-    {
+    ): void {
         $retryCount = $message->getRetryCount();
         if ($retryCount < self::RETRIES) {
-            sleep(self::SLEEP_BETWEEN_RETRIES);
+            //            sleep(self::SLEEP_BETWEEN_RETRIES);
             $message->setRetryCount($retryCount + 1);
-            $this->bus->dispatch(new Envelope($message));
+            $this->bus->dispatch(new Envelope($message, [
+                new DelayStamp(self::SLEEP_BETWEEN_RETRIES),
+            ]));
         } else {
             $this->helloRetailService->exportLogger(
-                HelretHelloRetail::EXPORT_ERROR,
+                HelretHelloRetail::EXPORT_ERROR . '.handle-retry',
                 [
                     'retryCount' => $retryCount,
                     'failures' => $failures,

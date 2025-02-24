@@ -3,6 +3,7 @@
 namespace Helret\HelloRetail\Service;
 
 use Helret\HelloRetail\Service\Models\RecommendationContext;
+use Helret\HelloRetail\Service\Models\Requests\RecommendationRequest;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Cms\DataResolver\CriteriaCollection;
 use Shopware\Core\Content\Product\ProductDefinition;
@@ -33,7 +34,7 @@ class HelloRetailRecommendationService
         string $key,
         string $searchKey,
         Entity $entity,
-        SalesChannelContext $salesChannelContext = null
+        SalesChannelContext $salesChannelContext
     ): ?CriteriaCollection {
         $collection = new CriteriaCollection();
         $hierarchies = [];
@@ -49,13 +50,17 @@ class HelloRetailRecommendationService
             $hierarchies = $category->getBreadcrumb();
         }
 
-        if ($salesChannelContext) {
-            /** @var SalesChannelDomainEntity $domain */
-            foreach ($salesChannelContext->getSalesChannel()->getDomains() as $domain) {
-                $urls[] = $domain->getUrl();
-            }
+        /** @var SalesChannelDomainEntity $domain */
+        foreach ($salesChannelContext->getSalesChannel()->getDomains() as $domain) {
+            $urls[] = $domain->getUrl();
         }
-        $productData = $this->fetchRecommendations($key, [$hierarchies], $urls);
+
+        $productData = $this->fetchRecommendations(
+            $key,
+            $salesChannelContext->getSalesChannelId(),
+            [$hierarchies],
+            $urls
+        );
 
         $ids = $this->getIds($productData);
         if (!$ids) {
@@ -74,17 +79,26 @@ class HelloRetailRecommendationService
 
     public function getRecommendations(string $key, SalesChannelContext $context)
     {
-        $productData = $this->fetchRecommendations($key);
+        $productData = $this->fetchRecommendations($key, $context->getSalesChannelId());
         return $this->getProducts($productData, $context);
     }
 
-    private function fetchRecommendations(string $key, array $hierarchies = [], $urls = []): array
-    {
+    private function fetchRecommendations(
+        string $key,
+        string $salesChannelId,
+        array $hierarchies = [],
+        $urls = []
+    ): array {
         if ($key) {
             $productData = [];
             $context = new RecommendationContext($hierarchies, "", $urls);
             $request = new Models\Recommendation($key, [self::EXTRA_DATA], $context);
-            $callback = $this->client->callApi(self::ENDPOINT, $request, 'recommendations');
+            $callback = $this->client->callApi(
+                endpoint: self::ENDPOINT,
+                request: $request,
+                type: 'recommendations',
+                salesChannelId: $salesChannelId
+            );
 
             foreach ($callback['responses'] ?? [] as $response) {
                 if (!$response['success']) {

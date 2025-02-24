@@ -5,29 +5,27 @@ namespace Helret\HelloRetail\DataResolver;
 use Helret\HelloRetail\Service\HelloRetailPageService;
 use Shopware\Core\Content\Cms\Aggregate\CmsSlot\CmsSlotEntity;
 use Shopware\Core\Content\Cms\DataResolver\CriteriaCollection;
+use Shopware\Core\Content\Cms\DataResolver\Element\AbstractCmsElementResolver;
 use Shopware\Core\Content\Cms\DataResolver\Element\ElementDataCollection;
 use Shopware\Core\Content\Cms\DataResolver\ResolverContext\ResolverContext;
-use Shopware\Core\Content\Product\Cms\ProductListingCmsElementResolver;
-use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
-use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
-class ProductListingCmsElementResolverDecorator extends ProductListingCmsElementResolver
+class ProductListingCmsElementResolverDecorator extends AbstractCmsElementResolver
 {
-    /**
-     * @param EntityRepository<ProductSortingCollection> $sortingRepository
-     */
     public function __construct(
-        private readonly AbstractProductListingRoute $listingRoute,
-        private readonly EntityRepository $sortingRepository,
+        protected readonly AbstractCmsElementResolver $decorated,
         private readonly HelloRetailPageService $pageService
     ) {
-        parent::__construct($this->listingRoute, $sortingRepository);
     }
+
+    public function getType(): string
+    {
+        return $this->decorated->getType();
+    }
+
 
     public function collect(CmsSlotEntity $slot, ResolverContext $resolverContext): ?CriteriaCollection
     {
-        return parent::collect($slot, $resolverContext);
+        return $this->decorated->collect($slot, $resolverContext);
     }
 
     public function enrich(CmsSlotEntity $slot, ResolverContext $resolverContext, ElementDataCollection $result): void
@@ -36,7 +34,6 @@ class ProductListingCmsElementResolverDecorator extends ProductListingCmsElement
         $hierarchies = [];
 
         $key = $config->get('helloRetailKey');
-
         if ($key) {
             if (method_exists($resolverContext, 'getEntity')) {
                 $entity = $resolverContext->getEntity();
@@ -47,6 +44,6 @@ class ProductListingCmsElementResolverDecorator extends ProductListingCmsElement
             $resolverContext->getRequest()->request->set('helloRetailHierarchies', $hierarchies);
         }
 
-        parent::enrich($slot, $resolverContext, $result);
+        $this->decorated->enrich($slot, $resolverContext, $result);
     }
 }

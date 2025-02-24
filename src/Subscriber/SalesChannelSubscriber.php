@@ -39,7 +39,8 @@ class SalesChannelSubscriber implements EventSubscriberInterface
 
     public function pageLoadedEvent(GenericPageLoadedEvent $event): void
     {
-        if (!$this->configService->get('HelretHelloRetail.config.partnerId')) {
+        $salesChannelId = $event->getSalesChannelContext()->getSalesChannelId();
+        if (!$this->configService->get('HelretHelloRetail.config.partnerId', $salesChannelId)) {
             // Missing partnerId, bail
             return;
         }
@@ -93,7 +94,7 @@ class SalesChannelSubscriber implements EventSubscriberInterface
         foreach ($event->getPayloads() as $payload) {
             $updateStatement = [];
             /* If payload for feeds set */
-            if (isset($payload['configuration']) && isset($payload['configuration']['feeds'])) {
+            if (isset($payload['configuration']['feeds'])) {
                 /* save payload, as we are going to pass it through with a few edits */
                 $updateStatement = $this->updateFeed($payload);
             }

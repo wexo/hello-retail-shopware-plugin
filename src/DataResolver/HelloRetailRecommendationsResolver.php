@@ -81,11 +81,15 @@ class HelloRetailRecommendationsResolver extends AbstractCmsElementResolver
 
         /** @var ProductCollection|null $products */
         $products = $searchResult->getEntities();
-        if ($products === null) {
+        if ($products->first() === null) {
             return;
         }
 
-        if ($this->systemConfigService->get('core.listing.hideCloseoutProductsWhenOutOfStock', $salesChannelContext->getSalesChannel()->getId())) {
+        $hideOutOfStock = $this->systemConfigService->get(
+            'core.listing.hideCloseoutProductsWhenOutOfStock',
+            $salesChannelContext->getSalesChannelId()
+        );
+        if ($hideOutOfStock) {
             $products = $this->filterOutOutOfStockHiddenCloseoutProducts($products);
         }
 

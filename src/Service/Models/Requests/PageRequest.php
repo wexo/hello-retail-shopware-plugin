@@ -3,7 +3,6 @@
 namespace Helret\HelloRetail\Service\Models\Requests;
 
 use Helret\HelloRetail\Service\Models\PageParams;
-use Helret\HelloRetail\Service\Models\PageProducts;
 
 class PageRequest extends Request
 {
