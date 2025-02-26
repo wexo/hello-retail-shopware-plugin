@@ -68,6 +68,7 @@ class HelloRetailSearchService
             if ($productIds) {
                 // Set ids from HelloRetail and reset sorting to allow "IdSorting"
                 $criteria->setIds($productIds);
+                $criteria->setTerm(null);
                 $criteria->resetSorting();
 
                 /**
