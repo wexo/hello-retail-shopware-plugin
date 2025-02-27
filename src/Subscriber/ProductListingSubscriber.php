@@ -4,7 +4,6 @@ namespace Helret\HelloRetail\Subscriber;
 
 use Helret\HelloRetail\Service\HelloRetailPageService;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Struct\ArrayEntity;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

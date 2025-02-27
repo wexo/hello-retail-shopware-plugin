@@ -4,7 +4,6 @@ namespace Helret\HelloRetail\Service;
 
 use Helret\HelloRetail\Service\Models\PageFilters;
 use Helret\HelloRetail\Service\Models\PageParams;
-use Helret\HelloRetail\Service\Models\PageProducts;
 use Helret\HelloRetail\Service\Models\Requests\PageRequest;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
@@ -12,19 +11,29 @@ class HelloRetailPageService extends HelloRetailApiService
 {
     private const ENDPOINT = "pages";
 
-    public function getPage(string $key, array $hierarchies, SalesChannelContext $salesChannelContext) : array
+    public function getPage(string $key, array $hierarchies, SalesChannelContext $salesChannelContext): array
     {
-        $urls = $this->renderUrls($salesChannelContext);
-
-        return $this->fetchPage($key, $hierarchies, $urls);
+        return $this->fetchPage(
+            $key,
+            $salesChannelContext->getSalesChannelId(),
+            $hierarchies,
+            $this->renderUrls($salesChannelContext)
+        );
     }
-    
-    private function fetchPage(string $key, array $hierarchies = [], $urls = []): array
+
+    private function fetchPage(string $key, string $salesChannelId, array $hierarchies = [], $urls = []): array
     {
         $pageFilters = new PageFilters($hierarchies);
-        $request = new PageRequest($pageFilters, $urls[0]);
+        $pageParams = new PageParams($pageFilters);
+        // this is not doing anything, but it is required by HR
+        $productOffset = ['start' => 0, 'count' => 100];
 
-        $callback = $this->client->callApi($this->buildEndpoint($key), $request);
+        $request = new PageRequest($pageParams, $urls[0], $productOffset);
+        $callback = $this->client->callApi(
+            $this->buildEndpoint($key),
+            $request,
+            salesChannelId: $salesChannelId
+        );
         if ($callback && (!$callback['success'] || empty($callback['products']))) {
             return [];
         }

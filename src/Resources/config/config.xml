@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
+    xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
         <title>Hello Retail Settings</title>
         <title lang="de-DE">Hello Retail Einstellungen</title>
@@ -83,8 +83,10 @@
             <label lang="de-DE">Limit Orders</label>
             <label lang="da-DK">Begræns ordrer</label>
             <helpText>When active it will only sync orders made in the past X months</helpText>
-            <helpText lang="de-DE">Wenn es aktiv ist, werden nur Bestellungen synchronisiert, die in den letzten X Monaten getätigt wurden</helpText>
-            <helpText lang="da-DK">Hvis aktiv, vil synkronisering af ordrer kun foretages fra de sidste X måneder</helpText>
+            <helpText lang="de-DE">Wenn es aktiv ist, werden nur Bestellungen synchronisiert, die in
+                den letzten X Monaten getätigt wurden</helpText>
+            <helpText lang="da-DK">Hvis aktiv, vil synkronisering af ordrer kun foretages fra de
+                sidste X måneder</helpText>
             <defaultValue>false</defaultValue>
         </input-field>
         <input-field type="int">
@@ -101,8 +103,10 @@
             <label lang="de-DE">Erweiterte Preise</label>
             <label lang="da-DK">Advanced Pricing</label>
             <helpText>Sync products with Advance pricing instead of List and Normal prices</helpText>
-            <helpText lang="de-DE">Synchronisieren Sie Produkte mit Advance anstelle von Listen- und Normalpreisen</helpText>
-            <helpText lang="da-DK">Synkroniser produkter med Advance priser i stedet for Liste og normale priser</helpText>
+            <helpText lang="de-DE">Synchronisieren Sie Produkte mit Advance anstelle von Listen- und
+                Normalpreisen</helpText>
+            <helpText lang="da-DK">Synkroniser produkter med Advance priser i stedet for Liste og
+                normale priser</helpText>
             <defaultValue>false</defaultValue>
         </input-field>
     </card>
@@ -327,6 +331,79 @@
                 </option>
             </options>
             <defaultValue>0</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Search</title>
+        <title lang="de-DE">Suchen</title>
+        <title lang="da-DK">Søge</title>
+
+        <input-field type="bool">
+            <name>searchEnabled</name>
+            <label>Enabled</label>
+            <label lang="de-DE">Ermöglicht</label>
+            <label lang="da-DK">Aktiveret</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>searchConfigKey</name>
+            <label>Search Config Key</label>
+            <label lang="de-DE">Konfigurationsschlüssel suchen</label>
+            <label lang="da-DK">Søgnings Konfigurations Nøgle</label>
+            <helpText>Found at the top in hello-retail dashboard when navigating "Search -> Overview
+                -> Configuration"</helpText>
+            <helpText lang="de-DE">Oben im Hello-Retail-Dashboard zu finden, wenn Sie zu „Suche ->
+                Übersicht -> Konfiguration“ navigieren.</helpText>
+            <helpText lang="da-DK">Findes øverst i Hello-retail dashboard, når du navigerer "Søg ->
+                Oversigt -> Konfiguration"</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>searchPage</name>
+            <label>Replace search page results</label>
+            <label lang="de-DE">Suchergebnisse ersetzen</label>
+            <label lang="da-DK">Erstat resultater på søgesiden</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+        <input-field type="int">
+            <name>searchCategoryLimit</name>
+            <label>Amount of search (Category/Content)</label>
+            <label lang="de-DE">Suchmenge (Kategorie/Inhalt) geätzt</label>
+            <label lang="da-DK">Antal (Kategori/Content) resultater</label>
+            <helpText>If blank no categories/content will be fetched</helpText>
+            <helpText lang="de-DE">Wenn leer, werden keine Kategorien/Inhalte abgerufen</helpText>
+            <helpText lang="da-DK">Hvis tom vil ingen kategorier/indhold blive hentet</helpText>
+        </input-field>
+
+        <!-- Suggest -->
+        <input-field type="bool">
+            <name>suggest</name>
+            <label>Replace suggest results</label>
+            <label lang="de-DE">Ersetzen Sie die vorgeschlagenen Ergebnisse</label>
+            <label lang="da-DK">Erstat forslået resultater</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>suggestProductLimit</name>
+            <label>Amount of suggestions (Product)</label>
+            <label lang="de-DE">Anzahl der Vorschläge (Produkt)</label>
+            <label lang="da-DK">Antal forslået resultater (Produkt)</label>
+            <helpText>If blank fallback to Shopware default</helpText>
+            <helpText lang="de-DE">Wenn leer, wird auf die Shopware-Standardeinstellung zurückgegriffen</helpText>
+            <helpText lang="da-DK">Hvis tom benyt til Shopware-standard</helpText>
+        </input-field>
+
+        <input-field type="int">
+            <name>suggestCategoryLimit</name>
+            <label>Amount of suggestions (Category/Content)</label>
+            <label lang="de-DE">Anzahl der Vorschläge (Kategorie/Inhalt)</label>
+            <label lang="da-DK">Antal forslået resultater (Kategori/Content)</label>
+            <helpText>If blank no categories/content will be fetched</helpText>
+            <helpText lang="de-DE">Wenn leer, werden keine Kategorien/Inhalte abgerufen</helpText>
+            <helpText lang="da-DK">Hvis tom vil ingen kategorier/indhold blive hentet</helpText>
         </input-field>
     </card>
 </config>

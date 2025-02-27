@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Helret\HelloRetail\Service;
 
@@ -101,13 +103,15 @@ class HelloRetailService
          * Implement when we need to pass currency.
          * @see ProductExportPartialGenerationHandler::finalizeExport
          */
-        $salesChannelContext = $this->salesChannelContextService->get(new SalesChannelContextServiceParameters(
-            $exportEntity->getStorefrontSalesChannelId(),
-            '',
-            $salesChannelDomain->getLanguageId(),
-            $salesChannelDomain->getCurrencyId(),
-            $salesChannelDomain->getId()
-        ));
+        $salesChannelContext = $this->salesChannelContextService->get(
+            new SalesChannelContextServiceParameters(
+                $exportEntity->getStorefrontSalesChannelId(),
+                '',
+                $salesChannelDomain->getLanguageId(),
+                $salesChannelDomain->getCurrencyId(),
+                $salesChannelDomain->getId()
+            )
+        );
         $context = $salesChannelContext->getContext();
         $salesChannelId = $salesChannelContext->getSalesChannelId();
 
@@ -154,10 +158,12 @@ class HelloRetailService
         $criteria = new Criteria();
         if (EntityType::getMatchingEntityType($feed) == EntityType::PRODUCT) {
             $criteria->addFilter(new EqualsFilter('product.active', true));
-            $criteria->addFilter(new EqualsFilter(
-                'product.visibilities.salesChannelId',
-                $salesChannelId
-            ));
+            $criteria->addFilter(
+                new EqualsFilter(
+                    'product.visibilities.salesChannelId',
+                    $salesChannelId
+                )
+            );
         } elseif (EntityType::getMatchingEntityType($feed) == EntityType::CATEGORY) {
             $categoryIds = [
                 $salesChannelContext->getSalesChannel()->getNavigationCategoryId(),
@@ -174,10 +180,14 @@ class HelloRetailService
              * Categories by salesChannel category ids.
              * @see CategoryBreadcrumbBuilder::getSalesChannelFilter
              */
-            $criteria->addFilter(new OrFilter(array_map(
-                fn(string $id) => new ContainsFilter('path', '|' . $id . '|'),
-                $categoryIds
-            )));
+            $criteria->addFilter(
+                new OrFilter(
+                    array_map(
+                        fn(string $id) => new ContainsFilter('path', '|' . $id . '|'),
+                        $categoryIds
+                    )
+                )
+            );
             $criteria->addFilter(new EqualsFilter('category.active', true));
         } elseif (EntityType::getMatchingEntityType($feed) == EntityType::ORDER) {
             $criteria->addFilter(new EqualsFilter('salesChannelId', $salesChannelId));
@@ -186,10 +196,12 @@ class HelloRetailService
                     'HelretHelloRetail.config.orderLimitMonths',
                     $salesChannelId
                 ) ?: 2;
-                $criteria->addFilter(new RangeFilter(
-                    'createdAt',
-                    [RangeFilter::GTE => (new DateTime("-{$amountOfMonths} month"))->format('Y-m-d')]
-                ));
+                $criteria->addFilter(
+                    new RangeFilter(
+                        'createdAt',
+                        [RangeFilter::GTE => (new DateTime("-{$amountOfMonths} month"))->format('Y-m-d')]
+                    )
+                );
             }
         }
 
@@ -209,11 +221,13 @@ class HelloRetailService
         }
 
         // Dynamically add associations
-        $feedEntity->setAssociations(array_merge(
-            $feedEntity->getAssociations(),
-            $exportFeed->associations,
-            $associations
-        ));
+        $feedEntity->setAssociations(
+            array_merge(
+                $feedEntity->getAssociations(),
+                $exportFeed->associations,
+                $associations
+            )
+        );
 
         $entityIds = $entityIdsResult->getIds();
 
@@ -335,7 +349,6 @@ class HelloRetailService
                 HelretHelloRetail::EXPORT_ERROR,
                 [
                     'template' => $template,
-                    'data' => $data,
                     'error' => $e->getMessage(),
                     'errorTrace' => $e->getTraceAsString(),
                     'errorType' => get_class($e)

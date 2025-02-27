@@ -46,8 +46,8 @@ class CartController extends StorefrontController
         path: '/checkout/offcanvas',
         name: 'frontend.cart.offcanvas',
         options: ['seo' => false],
-        methods: ['GET'],
-        defaults: ['XmlHttpRequest' => true]
+        defaults: ['XmlHttpRequest' => true],
+        methods: ['GET']
     )]
     public function offcanvas(Request $request, SalesChannelContext $context): Response
     {
@@ -56,9 +56,8 @@ class CartController extends StorefrontController
         $cartRecomsActive = $this->systemConfigService->getString('HelretHelloRetail.config.cartRecomsToggle');
         $errorMessage = '';
 
-        if ($data && !empty($data['recommendations'])) {
+        if ($data && !empty(['recommendations'])) {
             $page->addExtension('helloRetailRecommendations', $data['recommendations']);
-
             $this->hook(new CheckoutOffcanvasWidgetLoadedHook($page, $context));
         }
 
