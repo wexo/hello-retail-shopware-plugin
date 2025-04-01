@@ -64,6 +64,7 @@ class DecoratedProductSearchRoute extends AbstractProductSearchRoute
             !$request->request->get('reduce-aggregations');
 
         if (!$lazyAggregations) {
+            $context->addState('hello-retail-force-return-filters');
             return $this->decorated->load(
                 request: $request,
                 context: $context,

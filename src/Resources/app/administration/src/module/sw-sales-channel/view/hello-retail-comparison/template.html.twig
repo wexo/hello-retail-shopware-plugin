@@ -99,7 +99,10 @@
             >{{ $tc('helret-hello-retail.comparison.generateFeed', 0, {feedName}) }}</sw-button>
         </sw-card>
 
-        <sw-card v-if="!getFeedOptions().length">
+        <sw-card
+            v-if="!getFeedOptions().length"
+            position-identifier="sales-channel-hello-retail-missing-types"
+        >
             <sw-container>
                 <p>{{ $tc('helret-hello-retail.comparison.exportTypesMissing') }}</p>
             </sw-container>

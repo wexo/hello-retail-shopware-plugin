@@ -44,7 +44,16 @@
                 {% endblock %}
 
                 {% block sw_sales_channel_detail_base_general_storefront_domain %}
+                    <sw-single-select
+                        v-if="!salesChannel.configuration.storefrontSalesChannelId"
+                        :label="$tc('helret-hello-retail.sales-channel-types.base.storefrontDomain')"
+                        :disabled="true"
+                        :options="[]"
+                        :value="null"
+                    />
+
                     <sw-entity-single-select
+                        v-else
                         v-model:value="salesChannel.configuration.salesChannelDomainId"
                         required
                         :label="$tc('helret-hello-retail.sales-channel-types.base.storefrontDomain')"
@@ -52,8 +61,9 @@
                         labelProperty="url"
                         valueProperty="id"
                         entity="sales_channel_domain"
-                        :disabled="!salesChannel.configuration.storefrontSalesChannelId"
-                    ></sw-entity-single-select>
+                    >
+
+                    </sw-entity-single-select>
                 {% endblock %}
             </sw-container>
 
@@ -79,13 +89,13 @@
                 {% endblock %}
 
                 {% block sw_sales_channel_detail_base_general_generate %}
-                    <sw-button-process
+                    <sw-button
                             class="custom-btn-auth-gen"
                             variant="primary"
                             @click="generateAuthToken"
                     >
                         {{ $tc('helret-hello-retail.sales-channel-types.base.buttonGenerateAuthToken') }}
-                    </sw-button-process>
+                    </sw-button>
                 {% endblock %}
             </sw-container>
         {% endblock %}
@@ -97,6 +107,7 @@
     <template v-if="!isHelloRetail">{% parent %}</template>
     <sw-card
         v-else-if="salesChannel.configuration && salesChannel.configuration.feeds"
+        position-identifier="sales-channel-hello-retail-feeds"
         :isLoading="isLoading || isEntitiesLoading"
         :title="$tc('helret-hello-retail.detail.titleFeedCard')">
         {% block hello_retail_detail_feeds %}

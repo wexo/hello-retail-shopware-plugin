@@ -1,3 +1,6 @@
+# 5.4.0
+* Suchergebnisse auf der Suchseite über Hello Retail hinzugefügt
+
 # 5.3.0
 * Option zur Auswahl der Platzierung von Empfehlungsfeldern hinzugefügt: Seitenleiste (Standard) oder eingebettet in den Offcanvas.
 

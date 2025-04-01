@@ -48,5 +48,11 @@ class DecoratedSortingListingProcessor extends AbstractListingProcessor
         $result->setAvailableSortings(
             $searchResult->getProducts()?->sortings?->getCollection() ?: new ProductSortingCollection()
         );
+
+        $order = $request->get('order');
+        if ($order) {
+            $sorting = $result->getAvailableSortings()->get($order);
+            $result->setSorting($sorting?->getId());
+        }
     }
 }

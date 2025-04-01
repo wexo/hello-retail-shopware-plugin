@@ -97,6 +97,21 @@
     </extraDataList>
     {# Filtering end #}
 
+    {% if product.sortedProperties %}
+        <properties>
+            {% for propertyGroup in product.sortedProperties %}
+                <property>
+                    <name>{{ propertyGroup.getTranslation('name') }}</name>
+                    <options>
+                        {%- for property in propertyGroup.options -%}
+                            <property>{{ option.getTranslation('name') }}</property>
+                        {%- endfor -%}
+                    </options>
+                </property>
+            {% endfor %}
+        </properties>
+    {% endif %}
+
     <keywords>{% if product.searchKeywords %}{% for keyword in product.searchKeywords.elements %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
 
     <inStock>{% if product.availableStock > 0 %}true{% else %}false{% endif %}</inStock>
