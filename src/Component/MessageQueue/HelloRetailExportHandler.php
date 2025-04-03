@@ -357,7 +357,6 @@ class HelloRetailExportHandler
     ): void {
         $retryCount = $message->getRetryCount();
         if ($retryCount < self::RETRIES) {
-            //            sleep(self::SLEEP_BETWEEN_RETRIES);
             $message->setRetryCount($retryCount + 1);
             $this->bus->dispatch(new Envelope($message, [
                 new DelayStamp(self::SLEEP_BETWEEN_RETRIES),
