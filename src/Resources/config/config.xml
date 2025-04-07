@@ -15,6 +15,20 @@
     </card>
 
     <card>
+        <title>Page Request Type</title>
+        <title lang="de-DE">Seitenanforderungstyp</title>
+        <title lang="da-DK">Sideanmodningstype</title>
+
+        <input-field type="bool">
+            <name>useCategoryId</name>
+            <label>Use Category Id</label>
+            <label lang="de-DE">Kategorie-IDs verwenden</label>
+            <label lang="da-DK">Brug kategori-id'er</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
         <title>Cart Recommendations</title>
         <title lang="de-DE">Warenkorb-Empfehlungen</title>
         <title lang="da-DK">Indkøbskurv anbefalinger</title>

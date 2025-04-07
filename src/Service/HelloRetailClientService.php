@@ -91,7 +91,8 @@ class HelloRetailClientService
                     $request,
                     $type,
                     $salesChannelId
-                )
+                ),
+                ['timeout' => 5]
             );
         } catch (GuzzleException $e) {
             $this->logger->error('Request failed', [

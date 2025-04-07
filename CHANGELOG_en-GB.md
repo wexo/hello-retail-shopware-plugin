@@ -1,6 +1,10 @@
 # 5.4.0
 * Added search page listing results via hello retail
 
+# 5.3.1
+* Better error handling in cart recommendations
+* Added option to request pages by category id
+
 # 5.3.0
 * Added the option to choose the placement of recommendation boxes: sidebar (default) or embedded in the offcanvas.
 

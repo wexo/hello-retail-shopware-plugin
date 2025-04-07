@@ -12,11 +12,18 @@
 
         {% if config('HelretHelloRetail.config.cartRecomsToggle') %}
             {% if config('HelretHelloRetail.config.cartRecommendationPosition') === 'sidebar' %}
-                <div class="hr-recom d-none" data-offcanvas-cart-recommendations="true">
-                    <h2 class="hr-recom-heading"><span>{{ "helret-hello-retail.cart.offcanvasHeading"|trans|sw_sanitize|raw }} </span></h2>
-                    <div class="offcanvas-cart-recommendations">
+
+                {% if errorMessage %}
+                    <h3><span> {{ errorMessage }}</span></h3>
+                {% endif %}
+
+                {% if page.extensions.helloRetailRecommendations %}
+                    <div class="hr-recom d-none" data-offcanvas-cart-recommendations="true">
+                        <h2 class="hr-recom-heading"><span>{{ "helret-hello-retail.cart.offcanvasHeading"|trans|sw_sanitize|raw }} </span></h2>
+                        <div class="offcanvas-cart-recommendations">
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             {% endif %}
         {% endif %}
     {% endif %}

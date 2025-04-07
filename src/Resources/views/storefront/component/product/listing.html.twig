@@ -15,7 +15,7 @@
         <script type="text/javascript">
             window.hrListingData = {
                 helloRetailData: {{ helloRetailData|json_encode|raw }},
-                pageKey: '{{ pageKey }}',
+                pageKey: {{ pageKey|json_encode|raw }},
                 hierarchies: {{ hierarchies|json_encode|raw }}
             };
         </script>
