@@ -1,3 +1,6 @@
+# 5.4.0
+* Added search page listing results via hello retail
+
 # 5.3.1
 * Better error handling in cart recommendations
 * Added option to request pages by category id
@@ -22,6 +25,33 @@
 # 5.0.0
 * Compatibility for Shopware 6.6
 * Added authorization token to all feeds. Go to Hello Retail sales channels and generate token
+
+# 4.4.2
+* Added Search option
+* Feeds:
+  * Product feed
+    * Newly added:
+        * `extraDataList`.`*`
+        * `extraData`.`parentId`
+        * `extraData`.`displayGroup`
+        * `extraData`.`manufacturerId`
+        * `extraData`.`isCloseoutAvailable`
+    * Changed:
+      * Translatable to use `translation('key')`
+      * Moved auto mapped to `extraData` & `extraDataList`
+    * Corrected:
+      * `productnumber` => `productNumber`
+      * `instock` => `inStock`
+      * `imgurl` => `imgUrl`
+  * Category feed
+    * Newly added:
+      * `extraData`.`*`
+    * Changed:
+        * Translatable to use `translation('key')`
+
+# 4.4.1
+* Added API request safeguard and better handling
+* Added custom log handler to the API requests
 
 # 4.4.0
 * Added the option to replace Shopware product listing with hello retail pages using page key

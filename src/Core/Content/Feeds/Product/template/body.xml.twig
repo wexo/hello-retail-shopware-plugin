@@ -1,14 +1,17 @@
+{# @var product \Shopware\Core\Content\Product\SalesChannel\SalesChannelProductEntity #}
 <product>
     <url>{{ seoUrl('frontend.detail.page', {'productId': product.id}) }}</url>
-    <title>{% if product.name %}{{ product.name }}{% else %}{{ product.translated.name }}{% endif %}</title>
+    <title>{{ product.translation('name') }}</title>
+    <description>{{ product.translation('description') }}</description>
+
     <ean>{{ product.ean }}</ean>
-    <id>{{ product.id }}</id>
-    <sku>{{ product.productNumber }}</sku>
+    <productNumber>{{ product.productNumber }}</productNumber>
+
     {% if product.cover %}
         {% set thumbnail = product.cover.media.thumbnails.elements|filter(img => img.width == 400)|first %}
-        <imgurl>{% if thumbnail %}{{ thumbnail.url }}{% else %}{{ product.cover.media.url }}{% endif %}</imgurl>
+        <imgUrl>{% if thumbnail %}{{ thumbnail.url }}{% else %}{{ product.cover.media.url }}{% endif %}</imgUrl>
     {% else %}
-        <imgurl/>
+        <imgUrl/>
     {% endif %}
 
     {# Price #}
@@ -16,14 +19,9 @@
     {% set listPrice = price.listPrice %}
     <price>{{ price.unitPrice }}</price>
     <oldPrice>{% if listPrice %}{{ listPrice.price }}{% endif %}</oldPrice>
-    <displayFrom>{{ product.calculatedPrices.count > 1 }}</displayFrom>
     {# Price end #}
 
-
-    <description>{{ product.description }}</description>
-    <brand>{% if product.manufacturer %}{{ product.manufacturer.name }}{% endif %}</brand>
-
-    <productnumber>{{ product.productNumber }}</productnumber>
+    <brand>{% if product.manufacturer %}{{ product.manufacturer.translation('name') }}{% endif %}</brand>
     <hierarchies>
         {% if product.categories %}
             {% for category in product.categories.elements %}
@@ -36,14 +34,77 @@
         {% endif %}
     </hierarchies>
 
-    {% if product.extensions.properties %}
+    <extraData>
+        <id>{{ product.id }}</id>
+        <sku>{{ product.productNumber }}</sku>
+        <parentId>{{ product.parentId }}</parentId>
+        <displayGroup>{{ product.displayGroup }}</displayGroup>
+
+
+        {# Pricing #}
+        <displayFrom>{{ product.calculatedPrices.count > 1 }}</displayFrom>
+        <hasPriceRange>{% if product.calculatedPrices.count > 1 %}true{% else %}false{% endif %}</hasPriceRange>
+
+        <available>{{ product.available|intval }}</available>
+        <isCloseout>{{ product.isCloseout|intval }}</isCloseout>
+
+        {# Filtering for REST-API #}
+        <isCloseoutAvailable>{{ (not (product.isCloseout and not product.available))|intval }}</isCloseoutAvailable>
+        <manufacturerId>{{ product.manufacturerId }}</manufacturerId>
+    </extraData>
+
+    <extraDataList>
+        {# Filtering for REST-API #}
+        {# Transformed into: extraDataList.propertyIds #}
+        {% if product.propertyIds %}
+            {% for propertyId in product.propertyIds %}
+                <propertyIds>{{ propertyId }}</propertyIds>
+            {% endfor %}
+        {% endif %}
+
+        {# Transformed into: extraDataList.optionIds #}
+        {% if product.optionIds %}
+            {% for propertyId in product.propertyIds %}
+                <optionIds>{{ propertyId }}</optionIds>
+            {% endfor %}
+        {% endif %}
+
+        {# Transformed into: extraDataList.propertyGroup_{groupId} #}
+        {# @var propertyGroup \Shopware\Core\Content\Property\PropertyGroupEntity #}
+        {# @var property \Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity #}
+        {% if product.sortedProperties %}
+            {% for propertyGroup in product.sortedProperties %}
+                {% if propertyGroup.options %}
+                    {% for property in propertyGroup.options %}
+                        <propertyGroup_{{ propertyGroup.id }}>
+                            {{- property.id -}}
+                        </propertyGroup_{{ propertyGroup.id }}>
+                    {% endfor %}
+                {% endif %}
+                {# Left blank to ensure list format as this is a collection. #}
+                <propertyGroup_{{ propertyGroup.id }}/>
+            {% endfor %}
+        {% endif %}
+
+        {# @var propertyOption \Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity #}
+        {% if product.options %}
+            {% for propertyOption in product.options %}
+                <propertyGroup_{{ propertyOption.groupId }}>
+                    {{- propertyOption.id -}}
+                </propertyGroup_{{ propertyOption.groupId }}>
+            {% endfor %}
+        {% endif %}
+    </extraDataList>
+    {# Filtering end #}
+
+    {% if product.sortedProperties %}
         <properties>
-            {% for key, value in product.extensions.properties.all() %}
+            {% for propertyGroup in product.sortedProperties %}
                 <property>
-                    <name>{{ key }}</name>
+                    <name>{{ propertyGroup.getTranslation('name') }}</name>
                     <options>
-                        {%- for option in value -%}
-                            <option>{{ option.name }}</option>
+                        {%- for property in propertyGroup.options -%}
+                            <option>{{ property.getTranslation('name') }}</option>
                         {%- endfor -%}
                     </options>
                 </property>
@@ -53,10 +114,5 @@
 
     <keywords>{% if product.searchKeywords %}{% for keyword in product.searchKeywords.elements %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
 
-    {% set color = product.properties.elements|filter(property => property.group.name == 'Color')|first %}
-    <color>{% if color %}{{ color.name }}{% endif %}</color>
-
-    {% set gender = product.properties.elements|filter(property => property.group.name == 'Gender')|first %}
-    <gender>{% if gender %}{{ gender.name }}{% endif %}</gender>
-    <instock>{% if product.availableStock > 0 %}true{% else %}false{% endif %}</instock>
+    <inStock>{% if product.availableStock > 0 %}true{% else %}false{% endif %}</inStock>
 </product>

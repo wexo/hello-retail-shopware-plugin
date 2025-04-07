@@ -189,10 +189,7 @@ Component.override('sw-sales-channel-detail-base', {
             // ~Same as $super
 
             this.storefrontDomainUrl = salesChannel.domains.first().url;
-            this.$set(this.salesChannel, 'configuration', {
-                ...this.salesChannel.configuration,
-                salesChannelDomainId: salesChannel.domains.first().id
-            });
+            this.$set(this.salesChannel.configuration, 'salesChannelDomainId', salesChannel.domains.first()?.id);
 
             if (!this.salesChannel.accessKey) {
                 this.onGenerateKeys();

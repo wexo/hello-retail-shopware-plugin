@@ -2,11 +2,11 @@
 
 namespace Helret\HelloRetail\Service\Models\Requests;
 
-class Request {
-
+class Request extends AbstractRequest
+{
     public function __construct(
-        public ?string $websiteUuid,
-        public ?string $trackingUserId
+        public ?string $websiteUuid = null,
+        public ?string $trackingUserId = null
     ) {
     }
 
@@ -28,5 +28,10 @@ class Request {
     public function setTrackingUserId(string $trackingUserId): void
     {
         $this->trackingUserId = $trackingUserId;
+    }
+
+    public function toArray(): array
+    {
+        return [];
     }
 }

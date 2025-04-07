@@ -1,6 +1,10 @@
+# 5.4.0
+* Suchergebnisse auf der Suchseite über Hello Retail hinzugefügt
+
 # 5.3.1
 * Bessere Fehlerbehandlung bei Warenkorb-Empfehlungen
 * Option zum Anfordern von Seiten nach Kategorie-ID hinzugefügt
+
 
 # 5.3.0
 * Option zur Auswahl der Platzierung von Empfehlungsfeldern hinzugefügt: Seitenleiste (Standard) oder eingebettet in den Offcanvas.
@@ -22,6 +26,33 @@
 # 5.0.0
 * Kompatibilität für Shopware 6.5
 * Autorisierungstoken zu allen Feeds hinzugefügt. Gehen Sie zu den Hello Retail-Vertriebskanälen und generieren Sie ein Token
+
+# 4.4.2
+* Suchoption hinzugefügt
+* Feeds:
+    * Produkt-Feed
+        * Neu hinzugefügt:
+            * `extraDataList`.`*`
+            * `extraData`.`parentId`
+            * `extraData`.`displayGroup`
+            * `extraData`.`manufacturerId`
+            * `extraData`.`isCloseoutAvailable`
+        * Geändert:
+            * Translatable to use `translation('key')`
+            * Moved auto mapped to `extraData`
+        * Korrigiert:
+            * `productnumber` => `productNumber`
+            * `instock` => `inStock`
+            * `imgurl` => `imgUrl`
+    * Kategorie-Feed
+        * Neu hinzugefügt:
+            * `extraData`.`*`
+        * Geändert:
+            * Translatable to use `translation('key')`
+
+# 4.4.1
+* API-Anforderungsschutz und bessere Handhabung hinzugefügt
+* Benutzerdefinierter Protokollhandler für die API-Anforderungen hinzugefügt
 
 # 4.4.0
 * Option hinzugefügt, Shopware-Produktlisten mithilfe des Seitenschlüssels durch Hello-Retail-Seiten zu ersetzen

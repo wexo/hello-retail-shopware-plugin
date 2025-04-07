@@ -1,0 +1,6 @@
+[*.twig]
+indent_size = 4
+ij_continuation_indent_size = 4
+ij_html_continuation_indent_size = 4
+ij_twig_indent_size = 4
+ij_twig_continuation_indent_size = 4
