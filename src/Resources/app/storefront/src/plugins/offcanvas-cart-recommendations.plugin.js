@@ -28,16 +28,18 @@ export default class OffCanvasCartRecommendationsPlugin extends Plugin {
     }
 
     fetch() {
-        this._client.get(this.options.recommendationsUrl, (response) => {
-            const offcanvasCart = DomAccess.querySelector(document, this.options.cartSelector);
-            const recommendationsContainer = offcanvasCart.querySelector(this.options.recommendationsSelector);
+        this._client.get(this.options.recommendationsUrl, (responseText, response) => {
+            if (response.status !== 200) {
+                // handle errors
+            } else {
+                const offcanvasCart = DomAccess.querySelector(document, this.options.cartSelector);
+                const recommendationsContainer = offcanvasCart.querySelector(this.options.recommendationsSelector);
 
-            if (recommendationsContainer) {
-                recommendationsContainer.innerHTML = response;
-                DomAccess.querySelector(document, this.options.hrRecom).classList.remove('d-none');
+                if (recommendationsContainer) {
+                    recommendationsContainer.innerHTML = responseText;
+                    DomAccess.querySelector(document, this.options.hrRecom).classList.remove('d-none');
+                }
             }
-        }, (error) => {
-            console.error('Error fetching recommendations:', error);
         });
     }
 }
