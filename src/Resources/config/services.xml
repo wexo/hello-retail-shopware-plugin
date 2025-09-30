@@ -142,7 +142,11 @@
         <service id="Helret\HelloRetail\Service\HelloRetailRecommendationService">
             <argument type="service" id="Helret\HelloRetail\Service\HelloRetailClientService"/>
             <argument type="service" id="sales_channel.product.repository" />
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
+            <argument type="service" id="request_stack"/>
         </service>
+
 
         <service id="Helret\HelloRetail\DataResolver\HelloRetailRecommendationsResolver">
             <argument type="service" id="Helret\HelloRetail\Service\HelloRetailRecommendationService"/>
