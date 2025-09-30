@@ -4,8 +4,10 @@ namespace Helret\HelloRetail\Models;
 
 use Generator;
 use Helret\HelloRetail\Struct\EntityStruct;
+use Shopware\Core\Framework\Struct\Struct;
 
-class ProductModel
+
+class ProductModel extends Struct
 {
     public ?FilteringModel $filters = null;
     public ?SortingsModel $sortings = null;

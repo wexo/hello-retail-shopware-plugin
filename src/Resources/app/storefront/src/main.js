@@ -11,7 +11,7 @@ PluginManager.register('ProductListingPlugin', ProductListingPlugin, '[data-helr
 window.PluginManager.register(
   'aw-click-tracking',
   () => import('./plugins/ClickTracking.plugin'),
-  '.card [data-aw-source]'
+  '[data-aw-source]'
 );
 window.PluginManager.register(
   'aw-search-widget',

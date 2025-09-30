@@ -2,6 +2,7 @@
 
 namespace Helret\HelloRetail\Service;
 
+use Helret\HelloRetail\Models\ProductModel;
 use Helret\HelloRetail\Service\Models\RecommendationContext;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Cms\DataResolver\CriteriaCollection;
@@ -20,6 +21,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 class HelloRetailRecommendationService
 {
     private const EXTRA_DATA = "extraData";
+    private const TRACKING_CODE = "trackingCode";
     private const ENDPOINT = "recoms";
 
     /**
@@ -64,6 +66,7 @@ class HelloRetailRecommendationService
         );
 
         $ids = $this->getIds($productData);
+        $productModel = new ProductModel(['results' =>$productData]);
         if (!$ids) {
             return $collection;
         }
@@ -73,6 +76,7 @@ class HelloRetailRecommendationService
         $criteria->addAssociation('options.group');
         $criteria->addAssociation('manufacturer');
         $criteria->addExtension('ids', new ArrayEntity([$ids]));
+        $criteria->addExtension('hrData', $productModel);
         $collection->add($searchKey, ProductDefinition::class, $criteria);
 
         return $collection;
@@ -93,7 +97,7 @@ class HelloRetailRecommendationService
         if ($key) {
             $productData = [];
             $context = new RecommendationContext($hierarchies, "", $urls);
-            $request = new Models\Recommendation($key, [self::EXTRA_DATA], $context);
+            $request = new Models\Recommendation($key, [self::EXTRA_DATA, self::TRACKING_CODE], $context);
             $callback = $this->client->callApi(
                 endpoint: self::ENDPOINT,
                 request: $request,
