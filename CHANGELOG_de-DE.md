@@ -1,3 +1,7 @@
+# 5.3.8
+* Klick-Tracking zu den Warenkorb-Empfehlungen hinzugefügt
+* Funktionen im RecommendationService statt privat nun geschützt gemacht
+
 # 5.3.5
 * Klick-Tracking für Empfehlungen hinzugefügt
 * Kontextdaten an die Hello-Retail-Standards angepasst

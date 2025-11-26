@@ -1,3 +1,7 @@
+# 5.3.8
+* Added click tracking to cart recommendations
+* Made functions in RecommendationService protected instead of private
+
 # 5.3.5
 * Added click tracking on recommendations
 * Changed context data to follow Hello Retail standards

@@ -35,6 +35,8 @@ export default class OffCanvasCartRecommendationsPlugin extends Plugin {
             if (recommendationsContainer) {
                 recommendationsContainer.innerHTML = response;
                 DomAccess.querySelector(document, this.options.hrRecom).classList.remove('d-none');
+                const PluginManager = window.PluginManager;
+                PluginManager.initializePlugins(recommendationsContainer);
             }
         }, (error) => {
             console.error('Error fetching recommendations:', error);

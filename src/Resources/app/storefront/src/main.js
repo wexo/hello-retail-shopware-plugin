@@ -8,12 +8,12 @@ PluginManager.register('HelretCartTracker', CartTrackerPlugin, '[data-helret-car
 PluginManager.register('OffCanvasCartRecommendations', OffCanvasCartRecommendationsPlugin, '[data-offcanvas-cart-recommendations]');
 PluginManager.register('ProductListingPlugin', ProductListingPlugin, '[data-helret-listing]');
 
-window.PluginManager.register(
+PluginManager.register(
   'aw-click-tracking',
   () => import('./plugins/ClickTracking.plugin'),
   '[data-aw-source]'
 );
-window.PluginManager.register(
+PluginManager.register(
   'aw-search-widget',
   () => import('./plugins/DecoratedSearchWidgetPlugin.plugin'),
   '[data-search-widget]'

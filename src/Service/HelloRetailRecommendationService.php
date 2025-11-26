@@ -96,7 +96,7 @@ class HelloRetailRecommendationService
         return $this->getProducts($productData, $context);
     }
 
-    private function fetchRecommendations(
+    protected function fetchRecommendations(
         string $key,
         SalesChannelContext $salesChannelContext,
         array $hierarchies = [],
@@ -168,7 +168,7 @@ class HelloRetailRecommendationService
         return [];
     }
 
-    private function getProducts(array $productData, SalesChannelContext $context): ?ProductCollection
+    protected function getProducts(array $productData, SalesChannelContext $context): ?ProductCollection
     {
         $ids = $this->getIds($productData);
 
@@ -180,10 +180,31 @@ class HelloRetailRecommendationService
         $criteria->addAssociation('cover');
         $criteria->addAssociation('media');
         $criteria->addAssociation('seoUrls');
-        return $this->salesChannelRepository->search($criteria, $context)->getEntities();
+
+        $products = $this->salesChannelRepository->search($criteria, $context)->getEntities();
+
+        $rebuiltProductData = [];
+        foreach ($productData as $data) {
+            $id = $data[self::EXTRA_DATA]['id'] ?? $data[self::EXTRA_DATA]['productId'] ?? null;
+            if ($id) {
+                $rebuiltProductData[$id] = $data;
+            }
+        }
+
+        $hrData = new ProductModel(['results' => $rebuiltProductData]);
+        $hrStructs = $hrData->getStructs();
+
+        foreach ($products as $product) {
+            $productId = $product->getId();
+            if (isset($hrStructs[$productId])) {
+                $product->addExtension('hello-retail', $hrStructs[$productId]);
+            }
+        }
+
+        return $products;
     }
 
-    private function getIds(array $productData): array
+    protected function getIds(array $productData): array
     {
         $ids = [];
         foreach ($productData as $data) {
@@ -197,7 +218,7 @@ class HelloRetailRecommendationService
         return $ids;
     }
 
-    private function getCartUrls(SalesChannelContext $salesChannelContext, array $urls) : array
+    protected function getCartUrls(SalesChannelContext $salesChannelContext, array $urls) : array
     {
         $cartUrls = [];
         $productIds = [];
@@ -216,7 +237,7 @@ class HelloRetailRecommendationService
         return $cartUrls;
     }
 
-    private function getProductSEO(array $productIds, $context): array
+    protected function getProductSEO(array $productIds, $context): array
     {
         $productSeo = [];
 
