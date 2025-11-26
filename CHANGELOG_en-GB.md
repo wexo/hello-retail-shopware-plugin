@@ -1,4 +1,4 @@
-# 6.0.2
+# 6.0.3
 * Added click tracking to cart recommendations
 * Made functions in RecommendationService protected instead of private
 
