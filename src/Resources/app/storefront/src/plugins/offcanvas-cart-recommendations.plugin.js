@@ -34,6 +34,8 @@ export default class OffCanvasCartRecommendationsPlugin extends Plugin {
             if (recommendationsContainer) {
                 recommendationsContainer.innerHTML = response;
                 document.querySelector(this.options.hrRecom).classList.remove('d-none');
+                const PluginManager = window.PluginManager;
+                PluginManager.initializePlugins(recommendationsContainer);
             }
     });
     }

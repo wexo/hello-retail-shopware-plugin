@@ -1,3 +1,7 @@
+# 6.0.2
+* Klick-Tracking zu den Warenkorb-Empfehlungen hinzugefügt
+* Funktionen im RecommendationService statt privat nun geschützt gemacht
+
 # 6.0.1
 * LineItem-Suche geändert, um Referenz-ID anstelle von ID zu verwenden
 * Filter für Warenkorb-LineItems hinzugefügt, um Rabatte herauszufiltern

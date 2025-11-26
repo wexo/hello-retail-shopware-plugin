@@ -1,3 +1,7 @@
+# 6.0.2
+* Added click tracking to cart recommendations
+* Made functions in RecommendationService protected instead of private
+
 # 6.0.1
 * Changed lineItem lookup to use reference id instead of id
 * Added filter on cart lineItems to filter out discounts
