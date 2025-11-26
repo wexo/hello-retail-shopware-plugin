@@ -37,4 +37,14 @@ class RecommendationContext
     {
         $this->urls = $urls;
     }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?float $price): void
+    {
+        $this->price = $price;
+    }
 }
