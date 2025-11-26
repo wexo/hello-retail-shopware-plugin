@@ -2,6 +2,14 @@
 * Added click tracking to cart recommendations
 * Made functions in RecommendationService protected instead of private
 
+# 5.3.7
+* Added cart price to cart recommendations.
+
+# 5.3.6
+* Removed Request creation before context creation
+* Changed lineItem lookup to use reference id instead of id
+* Added filter on cart lineItems to filter out discounts
+
 # 5.3.5
 * Added click tracking on recommendations
 * Changed context data to follow Hello Retail standards

@@ -5,6 +5,7 @@ namespace Helret\HelloRetail\Service;
 use Helret\HelloRetail\Models\ProductModel;
 use Helret\HelloRetail\Service\Models\Recommendation;
 use Helret\HelloRetail\Service\Models\RecommendationContext;
+use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\SalesChannel\SalesChannelCategoryEntity;
@@ -120,7 +121,6 @@ class HelloRetailRecommendationService
 
         if ($key) {
             $productData = [];
-            $request = new Models\Recommendation($key, [self::EXTRA_DATA, self::TRACKING_CODE], $context);
             $context = new RecommendationContext();
             switch ($route) {
                 case 'frontend.home.page': // Home page
@@ -142,6 +142,10 @@ class HelloRetailRecommendationService
                     if($cartUrls){
                         $context->setUrls($cartUrls);
                     }
+
+                    $cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
+                    $cartPrice = $cart->getPrice()->getPositionPrice();
+                    $context->setPrice($cartPrice);
                     break;
                 default:
                     break;
@@ -223,8 +227,9 @@ class HelloRetailRecommendationService
         $cartUrls = [];
         $productIds = [];
         $cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
-        foreach ($cart->getLineItems() as $lineItem) {
-            $productIds[] = $lineItem->getId();
+        $lineItems = $cart->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE);
+        foreach ($lineItems as $lineItem) {
+            $productIds[] = $lineItem->getReferencedId();
         }
 
         $productSeo =$this->getProductSEO($productIds, $salesChannelContext->getContext());
