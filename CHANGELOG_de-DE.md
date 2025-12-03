@@ -1,6 +1,7 @@
 # 6.0.3
 * Klick-Tracking zu den Warenkorb-Empfehlungen hinzugefügt
 * Funktionen im RecommendationService statt privat nun geschützt gemacht
+* Logging-Abhängigkeit zum HelloRetailHandler hinzugefügt
 
 # 6.0.2
 * Warenkorbpreis zu Warenkorbempfehlungen hinzugefüg.

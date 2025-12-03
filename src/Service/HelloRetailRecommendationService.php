@@ -185,15 +185,7 @@ class HelloRetailRecommendationService
         $criteria->addAssociation('seoUrls');
         $products = $this->salesChannelRepository->search($criteria, $context)->getEntities();
 
-        $rebuiltProductData = [];
-        foreach ($productData as $data) {
-            $id = $data[self::EXTRA_DATA]['id'] ?? $data[self::EXTRA_DATA]['productId'] ?? null;
-            if ($id) {
-                    $rebuiltProductData[$id] = $data;
-                }
-        }
-
-        $hrData = new ProductModel(['results' => $rebuiltProductData]);
+        $hrData = new ProductModel(['results' => $productData]);
         $hrStructs = $hrData->getStructs();
 
         foreach ($products as $product) {

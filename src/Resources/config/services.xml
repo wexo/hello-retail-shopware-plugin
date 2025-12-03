@@ -90,6 +90,7 @@
             <argument type="service" id="sales_channel.repository"/>
             <argument type="service" id="Helret\HelloRetail\Service\HelloRetailService"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="monolog.logger"/>
             <tag name="messenger.message_handler"/>
         </service>
 
