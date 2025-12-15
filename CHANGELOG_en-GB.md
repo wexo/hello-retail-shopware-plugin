@@ -1,3 +1,7 @@
+# 5.3.8
+* Added click tracking to cart recommendations
+* Made functions in RecommendationService protected instead of private
+
 # 5.3.7
 * Added cart price to cart recommendations.
 
