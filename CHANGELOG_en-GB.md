@@ -1,3 +1,8 @@
+# 6.0.3
+* Added click tracking to cart recommendations
+* Made functions in RecommendationService protected instead of private
+* Added logging dependency to HelloRetailHandler
+
 # 6.0.2
 * Added cart price to cart recommendations.
 
