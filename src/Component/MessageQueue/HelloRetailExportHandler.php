@@ -142,7 +142,7 @@ class HelloRetailExportHandler extends AbstractMessageHandler
                     $connection = $this->container->get(Connection::class);
                     try {
                         $type = $connection->fetchOne("SELECT product_assignment_type FROM category WHERE id = :id", [
-                            ":id" => Uuid::fromHexToBytes($message->getId())
+                            "id" => Uuid::fromHexToBytes($message->getId())
                         ]);
                     } catch (Exception $e) {
                         $type = "product";

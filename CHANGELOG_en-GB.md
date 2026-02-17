@@ -1,3 +1,6 @@
+# 3.1.1
+* Fix incorrect :id parameter in ExportHandler
+
 # 3.1.0
 * Added authorization token to all feeds. Go to Hello Retail sales channels and generate token
 
