@@ -1,15 +1,49 @@
 services:
   shopware:
-    image: 029959346319.dkr.ecr.eu-west-1.amazonaws.com/devenv/shopware6/webserver:1.0
+    image: 029959346319.dkr.ecr.eu-west-1.amazonaws.com/devenv/shopware6/webserver:1.2
     container_name: shopware
+    # List style, like shopwaredb below, so the host variables can be pass-through entries: named with no
+    # value, they carry the developer's shell value in and leave the default in exactly one place, the
+    # entrypoint. That is what makes `HR_CORE_HOST=core.dev1.helloretail.com docker compose up` reach the
+    # container, while an unset variable still lands on the entrypoint's default.
+    # Changing one of them takes `docker compose up -d`, which recreates the container. `docker compose
+    # restart` will not do: a container's environment is captured when it is created, so a restart re-runs
+    # the entrypoint with the OLD value -- it logs `already current` and the storefront keeps the old host.
+    # HR_CDN_HOST is opt-in and has no default anywhere -- see the entrypoint for why a .test CDN breaks
+    # asset loading.
     environment:
-      APP_ENV: dev
+    - APP_ENV=dev
+    - HR_CORE_HOST
+    - HR_DASHBOARD_HOST
+    - HR_CDN_HOST
+    # The dev hosts have no public DNS and a container does not read the host's /etc/hosts, so without these
+    # the storefront cannot resolve them at all. host-gateway points them back at the developer's machine,
+    # where the dev-env nginx terminates them.
+    #
+    # Note the asymmetry with `environment` above: interpolation WITH a default is required here, because
+    # Compose resolves extra_hosts into the container's /etc/hosts before it starts -- there is no script
+    # left to apply a fallback, so an empty value would produce a broken entry. That does duplicate the two
+    # defaults, which otherwise live only in docker-config/shopware6/entrypoint.sh: keep the two values
+    # below in step with the HR_CORE_HOST / HR_DASHBOARD_HOST defaults there.
+    # These take the raw variable: Compose interpolates and cannot normalise. A scheme fails here at `up`
+    # time, loud and immediate; a TRAILING SLASH does not -- the daemon accepts it and writes a bogus
+    # /etc/hosts entry. Nor does an IP ADDRESS: the daemon takes it as the NAME of the entry and writes one
+    # no resolver will ever read. So the variables are bare hostnames, full stop, and the entrypoint
+    # validates all three against that rule and refuses to start on anything else. Normalising there instead
+    # would only fix the SDK hosts and leave this entry broken and silent.
+    extra_hosts:
+    - "${HR_CORE_HOST:-core.dev.helloretail.com}:host-gateway"
+    - "${HR_DASHBOARD_HOST:-my.dev.helloretail.com}:host-gateway"
     networks:
     - dev-env
     restart: unless-stopped
     volumes:
     - shopware:/usr/app/src
     - ./docker-config/shopware6/virtualhosts.conf:/etc/apache2/sites-available/shopware.hrdev.test.conf 
+    # The repo's entrypoint wins over the copy baked into the image, so a change here takes effect on the
+    # next start instead of waiting for a new image. /usr/app/src is also the `shopware` volume's mount
+    # point; this file mount is nested inside it, which Docker applies after the volume.
+    - ./docker-config/shopware6/entrypoint.sh:/usr/app/src/entrypoint.sh:ro
   shopwaredb:
     restart: unless-stopped
     container_name: shopwaredb

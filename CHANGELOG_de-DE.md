@@ -1,5 +1,8 @@
-# 6.0.4
+# 6.0.5
 * Corrigeer de onjuiste parameter :id in ExportHandler.
+
+# 6.0.4
+* SalesChannelContextService anstelle von SalesChannelContextServiceInterface beim Produktexport geändert.
 
 # 6.0.3
 * Klick-Tracking zu den Warenkorb-Empfehlungen hinzugefügt
