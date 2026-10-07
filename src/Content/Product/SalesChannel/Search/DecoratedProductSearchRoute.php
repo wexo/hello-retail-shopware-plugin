@@ -183,11 +183,13 @@ class DecoratedProductSearchRoute extends AbstractProductSearchRoute
         $response->getListingResult()->addState('is-hello-retail-search');
 
         $entityStructs = $originalResponse?->getProducts()?->getStructs();
-        foreach ($entityStructs as $entityStruct) {
-            $response->getListingResult()->get($entityStruct->getId())?->addExtension(
-                'hello-retail',
-                $entityStruct
-            );
+        if ($entityStructs) {
+            foreach ($entityStructs as $entityStruct) {
+                $response->getListingResult()->get($entityStruct->getId())?->addExtension(
+                    'hello-retail',
+                    $entityStruct
+                );
+            }
         }
     }
 }

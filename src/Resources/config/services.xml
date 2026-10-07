@@ -188,7 +188,8 @@
         </service>
 
         <service id="Helret\HelloRetail\Content\Product\SearchKeyword\DecoratedProductSearchBuilder"
-                 decorates="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface">
+                 decorates="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
+                 decoration-priority="-50001">
             <argument type="service" id=".inner"/>
             <argument type="service" id="Helret\HelloRetail\Service\HelloRetailSearchService"/>
             <argument type="service" id="event_dispatcher"/>

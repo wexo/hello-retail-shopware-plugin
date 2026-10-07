@@ -1,5 +1,14 @@
-# 5.3.9
+# 5.3.12
 * Fix incorrect :id parameter in ExportHandler
+
+# 5.3.11
+* Changed SalesChannelContextServiceInterface instead of SalesChannelContextService on Product Export
+
+# 5.3.10
+* Restored the plugin base class (HelretHelloRetail.php) that was accidentally removed in 5.3.9, which prevented the plugin from being installed and updated
+
+# 5.3.9
+* Ensured filters are included in the initial search response
 
 # 5.3.8
 * Added click tracking to cart recommendations

@@ -243,9 +243,7 @@ class HelloRetailSearchService
                 originalResponse: $originalResponse,
                 forceReturnFilters: ($isFilterRequest &&
                     ($postData['products']['returnFilters'] ?? false) !== true &&
-                    $originalResponse &&
-                    !$originalResponse->getProducts()->sortings) ||
-                $context->hasState('hello-retail-force-return-filters')
+                    $originalResponse)
             )
         );
 

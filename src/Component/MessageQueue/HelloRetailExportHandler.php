@@ -22,7 +22,7 @@ use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Adapter\Translation\AbstractTranslator;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextServiceInterface;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextServiceParameters;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Shopware\Core\Framework\Struct\ArrayStruct;
@@ -51,7 +51,7 @@ class HelloRetailExportHandler
         protected HelloRetailService $helloRetailService,
         protected MessageBusInterface $bus,
         protected ProductStreamBuilderInterface $productStreamBuilder,
-        protected SalesChannelContextService $salesChannelContextService
+        protected SalesChannelContextServiceInterface $salesChannelContextService
     ) {
         $fullPath = $helloRetailService->getFeedDirectoryPath();
         $this->filesystem = new Filesystem(new LocalFilesystemAdapter($fullPath));
