@@ -1,3 +1,6 @@
+# 5.3.11
+* Integrierte Suche: Die Suchseite und ihre Filteranfrage teilen sich jetzt einen Hello Retail Suchaufruf statt bis zu vier (Filter werden mit den Produkten geliefert, identische Suchen werden 60 Sekunden zwischengespeichert, und der Aggregations-Fallback wiederholt den Aufruf nicht mehr)
+
 # 5.3.10
 * Plugin-Basisklasse (HelretHelloRetail.php) wiederhergestellt, die in 5.3.9 versehentlich entfernt wurde und die Installation sowie Updates des Plugins verhinderte
 

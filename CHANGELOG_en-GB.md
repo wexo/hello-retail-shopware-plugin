@@ -1,3 +1,6 @@
+# 5.3.11
+* Integrated search: the search page and its filter request now share one Hello Retail search call instead of up to four (filters are returned with the products, identical searches are cached for 60 seconds, and the aggregation fallback no longer repeats the call)
+
 # 5.3.10
 * Restored the plugin base class (HelretHelloRetail.php) that was accidentally removed in 5.3.9, which prevented the plugin from being installed and updated
 

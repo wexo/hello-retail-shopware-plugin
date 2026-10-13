@@ -151,12 +151,16 @@ class DecoratedProductSearchRoute extends AbstractProductSearchRoute
             // Fallback.
             $origin->setLimit($searchResponse->getProducts()?->getTotalCount() ?: $criteria->getLimit());
 
-            $searchResponse = $this->searchService->searchByRequest(
-                request: $request,
-                criteria: $origin,
-                context: $context,
-                isFilterRequest: true
-            );
+            // A filter request already set the ids on $origin, only call HelloRetail when we just have the page ids.
+            if ($searchResponse === $originalResponse) {
+                $searchResponse = $this->searchService->searchByRequest(
+                    request: $request,
+                    criteria: $origin,
+                    context: $context,
+                    isFilterRequest: true,
+                    originalResponse: $originalResponse
+                );
+            }
             if ($searchResponse->getProducts()) {
                 $aggregations = $this->eventDispatcher->dispatch(
                     new HelretAggregationLoadedEvent(
