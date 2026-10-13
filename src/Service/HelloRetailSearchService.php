@@ -13,6 +13,7 @@ use Helret\HelloRetail\Event\Search\HelretSearchSortingEvent;
 use Helret\HelloRetail\Models\CriteriaModel;
 use Helret\HelloRetail\Models\SearchResponse;
 use Helret\HelloRetail\Subscriber\SearchSubscriber;
+use Psr\Cache\CacheItemPoolInterface;
 use RuntimeException;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionDefinition;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupTranslation\PropertyGroupTranslationDefinition;
@@ -34,11 +35,14 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class HelloRetailSearchService
 {
+    protected const SEARCH_CACHE_TTL = 60;
+
     public function __construct(
         public readonly HelloRetailClientService $client,
         protected readonly SystemConfigService $configService,
         protected readonly EventDispatcherInterface $eventDispatcher,
-        protected readonly Connection $connection
+        protected readonly Connection $connection,
+        protected readonly CacheItemPoolInterface $cache
     ) {
     }
 
@@ -119,6 +123,11 @@ class HelloRetailSearchService
         $postData = $this->getDefaultPostData($query, $context);
         $postData['products']['start'] = $offset ?: 0;
         $postData['products']['count'] = $limit;
+
+        // Return filters with the products, so the aggregations can reuse this response instead of a second call.
+        if (!$isFilterRequest && $this->shouldReturnFilters($request, $criteria)) {
+            $postData['products']['returnFilters'] = true;
+        }
 
         // Setup aggregated data.
         if ($isFilterRequest) {
@@ -263,12 +272,7 @@ class HelloRetailSearchService
             $postData['products']['filters'][] = 'extraData.isCloseoutAvailable:1';
         }
 
-        $response = $this->client->callApi(
-            endpoint: 'search',
-            request: $postData,
-            type: $type,
-            salesChannelId: $context->getSalesChannelId()
-        );
+        $response = $this->callSearchApi($request, $context, $postData, $type);
 
         $searchResponse = new SearchResponse($response);
         $this->eventDispatcher->dispatch(
@@ -303,6 +307,79 @@ class HelloRetailSearchService
         }
 
         return $searchResponse;
+    }
+
+    /**
+     * Only the search page needs filters, and only when they aren't fetched separately:
+     * - "only-aggregations" (filter widget) wants the filters for the active filters.
+     * - The page itself (lazy aggregations) wants all filters, which only matches when no filter is active.
+     */
+    protected function shouldReturnFilters(Request $request, Criteria $criteria): bool
+    {
+        if ($request->request->get('hello-retail-type', 'search') !== 'search') {
+            return false;
+        }
+
+        if ($request->get('no-aggregations')) {
+            return false;
+        }
+
+        if ($request->get('only-aggregations')) {
+            return true;
+        }
+
+        return !$request->get('reduce-aggregations') && !$criteria->getPostFilters();
+    }
+
+    /**
+     * The search page and its filter widget request (only-aggregations) send the same search right after each other.
+     * Reuse the response for identical searches for a short while instead of calling HelloRetail again.
+     *
+     * @param array<string, mixed> $postData
+     * @return array<string, mixed>
+     */
+    protected function callSearchApi(
+        Request $request,
+        SalesChannelContext $context,
+        array $postData,
+        string $type
+    ): array {
+        if ($type !== 'search') {
+            return $this->client->callApi(
+                endpoint: 'search',
+                request: $postData,
+                type: $type,
+                salesChannelId: $context->getSalesChannelId()
+            );
+        }
+
+        $cacheKey = 'hello-retail-search-' . hash('xxh128', (string) json_encode([
+            $postData,
+            $type,
+            $context->getSalesChannelId(),
+            $request->cookies->get('hello_retail_id'),
+        ]));
+
+        $item = $this->cache->getItem($cacheKey);
+        if ($item->isHit() && is_array($item->get())) {
+            return $item->get();
+        }
+
+        $response = $this->client->callApi(
+            endpoint: 'search',
+            request: $postData,
+            type: $type,
+            salesChannelId: $context->getSalesChannelId()
+        );
+
+        // Empty means the call failed, don't keep that.
+        if ($response) {
+            $item->set($response);
+            $item->expiresAfter(self::SEARCH_CACHE_TTL);
+            $this->cache->save($item);
+        }
+
+        return $response;
     }
 
     protected function getDefaultPostData(

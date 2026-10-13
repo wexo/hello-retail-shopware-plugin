@@ -32,6 +32,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="cache.app"/>
         </service>
 
         <service id="Helret\HelloRetail\Service\HelloRetailService" public="true">
