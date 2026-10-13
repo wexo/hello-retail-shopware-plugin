@@ -1,3 +1,6 @@
+# 6.0.6
+* Integrated search: the search page and its filter request now share one Hello Retail search call instead of up to four (filters are returned with the products, identical searches are cached for 60 seconds, and the aggregation fallback no longer repeats the call)
+
 # 6.0.5
 * Fix incorrect :id parameter in ExportHandler 
 
