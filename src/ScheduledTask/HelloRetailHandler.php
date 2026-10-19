@@ -11,7 +11,9 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\MessageQueue\ScheduledTask\ScheduledTaskHandler;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+#[AsMessageHandler(handles: HelloRetailTask::class)]
 class HelloRetailHandler extends ScheduledTaskHandler
 {
     public function __construct(
@@ -23,11 +25,6 @@ class HelloRetailHandler extends ScheduledTaskHandler
         LoggerInterface $exceptionLogger
     ) {
         parent::__construct($scheduledTaskRepository, $exceptionLogger);
-    }
-
-    public static function getHandledMessages(): iterable
-    {
-        return [HelloRetailTask::class];
     }
 
     public function run(): void

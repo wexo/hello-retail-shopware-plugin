@@ -104,6 +104,9 @@ class HelretHelloRetail extends Plugin
         if (version_compare($updateContext->getUpdatePluginVersion(), "4.4.1", ">=")) {
             $updates[] = $this->getUpdateTemplatesV441();
         }
+        if (version_compare($updateContext->getUpdatePluginVersion(), "6.0.6", ">=")) {
+            $updates[] = $this->getUpdateTemplatesV606();
+        }
 
         $versionUpdate = $updates && $this->updateTemplates($updates, $updateContext->getContext());
 
@@ -413,6 +416,144 @@ class HelretHelloRetail extends Plugin
         // phpcs:enable Generic.Files.LineLength.TooLong
     }
 
+
+    /**
+     * Product body before 6.0.6, when <keywords> was filled from the search index (product.searchKeywords)
+     * instead of the product's own search keywords (customSearchKeywords).
+     *
+     * @return array<string, array<string, string>>
+     */
+    private function getUpdateTemplatesV606(): array
+    {
+        return [
+            'product' => [
+                'bodyTemplate' => <<<'TWIG'
+{# @var product \Shopware\Core\Content\Product\SalesChannel\SalesChannelProductEntity #}
+<product>
+    <url>{{ seoUrl('frontend.detail.page', {'productId': product.id}) }}</url>
+    <title>{{ product.translation('name') }}</title>
+    <description>{{ product.translation('description') }}</description>
+
+    <ean>{{ product.ean }}</ean>
+    <productNumber>{{ product.productNumber }}</productNumber>
+
+    {% if product.cover %}
+        {% set thumbnail = product.cover.media.thumbnails.elements|filter(img => img.width == 400)|first %}
+        <imgUrl>{% if thumbnail %}{{ thumbnail.url }}{% else %}{{ product.cover.media.url }}{% endif %}</imgUrl>
+    {% else %}
+        <imgUrl/>
+    {% endif %}
+
+    {# Price #}
+    {% set price = product.calculatedPrices.count > 0 ? product.calculatedPrices.last : product.calculatedPrice %}
+    {% set listPrice = price.listPrice %}
+    <price>{{ price.unitPrice }}</price>
+    <oldPrice>{% if listPrice %}{{ listPrice.price }}{% endif %}</oldPrice>
+    {# Price end #}
+
+    <brand>{% if product.manufacturer %}{{ product.manufacturer.translation('name') }}{% endif %}</brand>
+    <hierarchies>
+        {% if product.categories %}
+            {% for category in product.categories.elements %}
+                <hierarchy>
+                    {%- for breadCrumb in category.getBreadcrumb -%}
+                        <category>{{ breadCrumb }}</category>
+                    {%- endfor -%}
+                </hierarchy>
+            {% endfor %}
+        {% endif %}
+    </hierarchies>
+
+    <extraData>
+        <id>{{ product.id }}</id>
+        <sku>{{ product.productNumber }}</sku>
+        <parentId>{{ product.parentId }}</parentId>
+        <displayGroup>{{ product.displayGroup }}</displayGroup>
+
+
+        {# Pricing #}
+        <displayFrom>{{ product.calculatedPrices.count > 1 }}</displayFrom>
+        <hasPriceRange>{% if product.calculatedPrices.count > 1 %}true{% else %}false{% endif %}</hasPriceRange>
+
+        <available>{{ product.available|intval }}</available>
+        <isCloseout>{{ product.isCloseout|intval }}</isCloseout>
+
+        {# Filtering for REST-API #}
+        <isCloseoutAvailable>{{ (not (product.isCloseout and not product.available))|intval }}</isCloseoutAvailable>
+        <manufacturerId>{{ product.manufacturerId }}</manufacturerId>
+    </extraData>
+
+    <extraDataList>
+        {# Filtering for REST-API #}
+        {# Transformed into: extraDataList.propertyIds #}
+        {% if product.propertyIds %}
+            {% for propertyId in product.propertyIds %}
+                <propertyIds>{{ propertyId }}</propertyIds>
+            {% endfor %}
+        {% endif %}
+
+        {# Transformed into: extraDataList.optionIds #}
+        {% if product.optionIds %}
+            {% for propertyId in product.propertyIds %}
+                <optionIds>{{ propertyId }}</optionIds>
+            {% endfor %}
+        {% endif %}
+
+        {# Transformed into: extraDataList.propertyGroup_{name}_{groupId} #}
+        {# Note, the twig filters: |trim|title|slug|replace({'-':''}) - Is a requirement to ensure a valid tag #}
+        {# @var propertyGroup \Shopware\Core\Content\Property\PropertyGroupEntity #}
+        {# @var property \Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity #}
+        {% if product.sortedProperties %}
+            {% for propertyGroup in product.sortedProperties %}
+                {% set name = propertyGroup.name|trim|title|slug|replace({'-':''}) %}
+
+                {% if propertyGroup.options %}
+                    {% for property in propertyGroup.options %}
+                        <propertyGroup_{{ name }}_{{ propertyGroup.id }}>
+                            {{- property.id -}}
+                        </propertyGroup_{{ name }}_{{ propertyGroup.id }}>
+                    {% endfor %}
+                {% endif %}
+                {# Left blank to ensure list format as this is a collection. #}
+                <propertyGroup_{{ name }}_{{ propertyGroup.id }}/>
+            {% endfor %}
+        {% endif %}
+
+        {# @var propertyOption \Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity #}
+        {% if product.options %}
+            {% for propertyOption in product.options %}
+                {% set name = propertyOption.group.name|trim|title|slug|replace({'-':''}) %}
+                <propertyGroup_{{ name }}_{{ propertyOption.groupId }}>
+                    {{- propertyOption.id -}}
+                </propertyGroup_{{ name }}_{{ propertyOption.groupId }}>
+            {% endfor %}
+        {% endif %}
+    </extraDataList>
+    {# Filtering end #}
+
+    <keywords>{% if product.searchKeywords %}{% for keyword in product.searchKeywords.elements %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
+
+    <inStock>{% if product.availableStock > 0 %}true{% else %}false{% endif %}</inStock>
+
+    {% if product.extensions.properties %}
+        <properties>
+            {% for key, value in product.extensions.properties.all() %}
+                <property>
+                    <name>{{ key }}</name>
+                    <options>
+                        {%- for option in value -%}
+                            <option>{{ option.name }}</option>
+                        {%- endfor -%}
+                    </options>
+                </property>
+            {% endfor %}
+        </properties>
+    {% endif %}
+</product>
+TWIG,
+            ],
+        ];
+    }
 
     private function updateTemplates(array $updateTemplates, Context $context): bool
     {
