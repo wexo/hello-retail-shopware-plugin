@@ -101,7 +101,7 @@
     </extraDataList>
     {# Filtering end #}
 
-    <keywords>{% if product.searchKeywords %}{% for keyword in product.searchKeywords.elements %}{{ keyword.keyword }},{% endfor %}{% endif %}</keywords>
+    <keywords>{{ product.translation('customSearchKeywords')|default([])|join(',') }}</keywords>
 
     <inStock>{% if product.availableStock > 0 %}true{% else %}false{% endif %}</inStock>
 

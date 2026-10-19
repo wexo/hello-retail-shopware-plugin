@@ -93,7 +93,7 @@
             <argument type="service" id="sales_channel.repository"/>
             <argument type="service" id="Helret\HelloRetail\Service\HelloRetailService"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
-            <tag name="messenger.message_handler"/>
+            <tag name="messenger.message_handler" handles="Helret\HelloRetail\ScheduledTask\HelloRetailTask"/>
         </service>
 
         <service id="Helret\HelloRetail\Subscriber\SalesChannelSubscriber" public="true">

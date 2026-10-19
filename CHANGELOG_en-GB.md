@@ -1,3 +1,7 @@
+# 5.3.13
+* Fixed scheduled task handler registration: `HelloRetailHandler` now handles only `HelloRetailTask` instead of every scheduled task (Shopware 6.6+ ignores `getHandledMessages()`) - issue #53
+* Product feed `<keywords>` now uses the product's search keywords (`customSearchKeywords`, translated and inherited) instead of Shopware's generated search index - issue #54. Feeds using the default template switch automatically; customised product templates keep their own keywords line
+
 # 5.3.12
 * Fix incorrect :id parameter in ExportHandler
 
